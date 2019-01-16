@@ -4,6 +4,10 @@
 # Mac files
 .DS_Store
 
+# Clear IntelliJ folder and project files
+.idea/
+*.iml
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml

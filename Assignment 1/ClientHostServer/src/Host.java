@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.net.*;
 
 /**
@@ -15,7 +14,7 @@ public class Host {
 
     private DatagramSocket receivingSocket, sendReceiveSocket;
     private DatagramPacket receivePacket, sendPacket, boncePacket;
-    private final PacketSocketHelper psh;
+    private static final PacketSocketHelper PSH = new PacketSocketHelper();
 
     public static final int SERVER_PORT = 69;
     public static final int HOST_PORT = 23;
@@ -36,16 +35,14 @@ public class Host {
             se.getMessage();
             System.exit(1);
         }
-
-        psh = new PacketSocketHelper();
     }
 
     /**
      * Receive packet from the client
      */
     private void receivePacket() {
-        receivePacket = psh.receivePacket(receivingSocket);
-        psh.print(receivePacket, "Host", "received from Client");
+        receivePacket = PSH.receivePacket(receivingSocket);
+        PSH.print(receivePacket, "Host", "received from Client");
 
     }
 
@@ -54,18 +51,18 @@ public class Host {
      * @param port int port of the server (default - 69)
      */
     private void sendPacketToServer(int port) {
-        sendPacket = psh.sendPacket(sendReceiveSocket, receivePacket.getData(), port);
-        psh.print(sendPacket, "Host", "sent to Server");
+        sendPacket = PSH.sendPacket(sendReceiveSocket, receivePacket.getData(), port);
+        PSH.print(sendPacket, "Host", "sent to Server");
     }
 
     private void receiveResponseFromServer() {
-        boncePacket = psh.receivePacket(sendReceiveSocket);
-        psh.print(boncePacket, "Host", "received bonce from Server");
+        boncePacket = PSH.receivePacket(sendReceiveSocket);
+        PSH.print(boncePacket, "Host", "received bonce from Server");
     }
 
     private void bonceBackResponse() {
-        sendPacket = psh.sendPacket(sendReceiveSocket, boncePacket.getData(), receivePacket.getPort());
-        psh.print(sendPacket, "Host", "sent to Client");
+        sendPacket = PSH.sendPacket(sendReceiveSocket, boncePacket.getData(), receivePacket.getPort());
+        PSH.print(sendPacket, "Host", "sent to Client");
     }
 
     /**

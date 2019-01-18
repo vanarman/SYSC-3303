@@ -21,7 +21,7 @@ public class Server {
 
     private DatagramSocket receivingSocket, sendReceiveSocket;
     private DatagramPacket receivePacket, boncePacket;
-    private final PacketSocketHelper psh;
+    private static final PacketSocketHelper PSH = new PacketSocketHelper();
 
     /**
      * Default constructor of the server class.
@@ -34,13 +34,10 @@ public class Server {
     public Server() {
         try {
             receivingSocket = new DatagramSocket(Host.SERVER_PORT);
-            sendReceiveSocket = new DatagramSocket();
         } catch(SocketException se) {
             System.out.println(se.getMessage());
             System.exit(1);
         }
-
-        psh = new PacketSocketHelper();
     }
 
     /**
@@ -50,12 +47,20 @@ public class Server {
      * If validation fail - throws an exception and stops execution of the program with system exit 1
      */
     private void receivePacket() {
-        receivePacket = psh.receivePacket(receivingSocket);
-        psh.print(receivePacket, "Server", "received message from host");
+        receivePacket = PSH.receivePacket(receivingSocket);
+        PSH.print(receivePacket, "Server", "received message from host");
 
         receivePacketValidation(receivePacket);
     }
 
+    /**
+     * Validation method that check is the received package is valid (follows a specified pattern)
+     * 0 [1|2] message.byte 0 mode.byte 0
+     *
+     * Response if received package is valid.
+     *
+     * @param rp DatagramPacket received packed to validate
+     */
     private void receivePacketValidation(DatagramPacket rp) {
         boolean validPacket = true;
         byte data[] = rp.getData();
@@ -66,7 +71,7 @@ public class Server {
         }
 
         if( !(data[1] == (byte) 1 || data[1] == (byte) 2)) {
-            this.throwException("Message format is invalid!\nSecond byte should be either \'1\' or \'2\'.\nGiven value is: " +String.valueOf(data[1]));
+            this.throwException("Message format is invalid!\nSecond byte should be either \'1\' or \'2\'.\nReceived value is: " +String.valueOf(data[1]));
             validPacket = false;
         }
 
@@ -81,7 +86,7 @@ public class Server {
         String modeStr = new String(mode).toLowerCase();
 
         if( !(modeStr.equals("netascii") || modeStr.equals("octet")) ) {
-            this.throwException("Specified can not be recognized. Should be either \"octet\" or \"netascii\".");
+            this.throwException("Specified mode can not be recognized.\nShould be either \"octet\" or \"netascii\".\nReceived mode: " +modeStr);
             validPacket = false;
         }
 
@@ -109,14 +114,25 @@ public class Server {
 
         delayTime(7000);
 
-        boncePacket = psh.sendPacket(sendReceiveSocket, bonceBackMessage, receivePacket.getPort());
-        psh.print(boncePacket, "Server", "send response to the host");
+        try {
+            sendReceiveSocket = new DatagramSocket();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
 
-        // TODO: Byte array to byte[] conversion
-        // TODO: validate mode either "netascii" or "octet" neglect case of the letters
-        // TODO: create message to bonce back tp the client (read [1] - 0 3 0 1, write [2] - 0 4 0 0)
+        boncePacket = PSH.sendPacket(sendReceiveSocket, bonceBackMessage, rp.getPort());
+        PSH.print(boncePacket, "Server", "bonce back to Host");
+
+        sendReceiveSocket.close();
     }
 
+    /**
+     * Split byte array into two dimension array of bytes.
+     * Separate given byte array using "0" byte separator
+     *
+     * @param data byte[] array of bytes to separate
+     * @return List list array of arrays
+     */
     private List byteSplitter(byte[] data) {
         List<List> arr = new ArrayList<>();
         List<Byte> temp = new ArrayList<>();
@@ -134,14 +150,6 @@ public class Server {
         }
 
         return arr;
-    }
-
-    /**
-     * Send response message to the host
-     */
-    private void bonceBackResponse() {
-        psh.sendPacket(sendReceiveSocket,boncePacket);
-        psh.print(receivePacket, "Server", "bonce back to Host");
     }
 
     /**

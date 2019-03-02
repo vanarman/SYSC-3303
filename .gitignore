@@ -4,6 +4,14 @@
 # Mac files
 .DS_Store
 
+#MS files
+*.doc
+*.docx
+*.xls
+*.pdf
+*.zip
+*.tar
+
 # Clear IntelliJ folder and project files
 .idea/
 *.iml

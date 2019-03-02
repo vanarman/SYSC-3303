@@ -29,7 +29,7 @@ public class Chef implements Runnable {
     private boolean validate() {
         if(pulled != null) {
             if (pulled[0].ordinal() != have.ordinal() && pulled[1].ordinal() != have.ordinal()) {
-                System.out.println(Thread.currentThread().getName() +" have "+ have + " and pulled "+ pulled[0] +" & "+ pulled[1]);
+//                System.out.println(Thread.currentThread().getName() +" have "+ have + " and pulled "+ pulled[0] +" & "+ pulled[1]);
                 return true;
             }
         }
@@ -43,7 +43,9 @@ public class Chef implements Runnable {
     public void run() {
         while(true) {
             synchronized (buf) {
+                long start = System.nanoTime();
                 pulled = buf.get();
+                buf.calculateTime(start);
                 if (validate()) {
                     buf.consumed();
                 } else {

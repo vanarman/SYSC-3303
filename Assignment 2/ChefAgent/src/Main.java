@@ -6,6 +6,7 @@
  */
 
 public class Main {
+    public static final int NUMBER_TO_CONSUME = 20;
 
     /**
      * Program enter method

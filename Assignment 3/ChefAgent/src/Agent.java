@@ -25,6 +25,7 @@ public class Agent implements Runnable {
      * @return Ingredients[] array of ingredients
      */
     public Ingredients[] generate() {
+
         int id1 = new Random().nextInt(Ingredients.values().length);
         int id2 = new Random().nextInt(Ingredients.values().length);
         while(id1 == id2) {
@@ -34,6 +35,9 @@ public class Agent implements Runnable {
         Ingredients ing1 = Ingredients.values()[id1];
         Ingredients ing2 = Ingredients.values()[id2];
 
+
+//        System.out.println(Thread.currentThread().getName() +" put on table: "+ ing1 +" and "+ ing2);
+
         return new Ingredients[]{ing1, ing2};
     }
 
@@ -42,10 +46,14 @@ public class Agent implements Runnable {
      */
     @Override
     public void run() {
-        synchronized (buf) {
-            while (true) {
+        while (true) {
+            synchronized (buf) {
+                long start = System.nanoTime();
                 buf.put(generate());
+                buf.calculateTime(start);
             }
         }
     }
+
+
 }
